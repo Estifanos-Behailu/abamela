@@ -1,14 +1,13 @@
 "use client"
 
 import type React from "react"
-
+import { useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Mail, MapPin, Phone, Send } from "lucide-react"
-import { useState } from "react"
 
 export default function ContactPage() {
   const [formData, setFormData] = useState({
@@ -16,7 +15,7 @@ export default function ContactPage() {
     email: "",
     company: "",
     jobRoles: "",
-    country:"",
+    country: "",
     message: "",
   })
 
@@ -24,7 +23,7 @@ export default function ContactPage() {
   const [isSubmitted, setIsSubmitted] = useState(false)
   const [submitError, setSubmitError] = useState("")
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
   }
@@ -35,39 +34,38 @@ export default function ContactPage() {
     setSubmitError("")
 
     try {
-      const response = await fetch('/api/send-email', {
-        method: 'POST',
+      const response = await fetch("https://formspree.io/f/mgvkzazb", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          Accept: "application/json",
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
-      });
+        body: JSON.stringify({
+          ...formData,
+        }),
+      })
 
-      const data = await response.json();
-      
+      const data = await response.json()
+
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to send email');
+        throw new Error(data?.errors?.[0]?.message || "Failed to send message.")
       }
 
-      setIsSubmitted(true);
+      setIsSubmitted(true)
       setFormData({
         name: "",
         email: "",
         company: "",
         jobRoles: "",
-        country:"",
+        country: "",
         message: "",
-      });
+      })
 
-      // Reset success message after 5 seconds
-      setTimeout(() => {
-        setIsSubmitted(false);
-      }, 5000);
+      setTimeout(() => setIsSubmitted(false), 5000)
     } catch (error) {
-      console.error('Error submitting form:', error);
-      setSubmitError(error instanceof Error ? error.message : 'Failed to send email, please try again');
+      setSubmitError(error instanceof Error ? error.message : "Unknown error occurred.")
     } finally {
-      setIsSubmitting(false);
+      setIsSubmitting(false)
     }
   }
 
@@ -81,24 +79,23 @@ export default function ContactPage() {
       </div>
 
       <div className="grid lg:grid-cols-2 gap-12 items-start">
-        {/* Contact Form */}
         <Card className="border-neutral-200">
           <CardContent className="p-6 sm:p-8">
             <h2 className="text-2xl font-bold mb-6">Send Us a Message</h2>
 
-            {isSubmitted ? (
+            {isSubmitted && (
               <div className="bg-green-50 border border-green-200 text-green-700 rounded-lg p-4 mb-6">
                 <p className="font-medium">Thank you for your message!</p>
                 <p>We'll get back to you as soon as possible.</p>
               </div>
-            ) : null}
+            )}
 
-            {submitError ? (
+            {submitError && (
               <div className="bg-red-50 border border-red-200 text-red-700 rounded-lg p-4 mb-6">
                 <p className="font-medium">Error sending message</p>
                 <p>{submitError}</p>
               </div>
-            ) : null}
+            )}
 
             <form onSubmit={handleSubmit} className="space-y-6">
               <div className="grid sm:grid-cols-2 gap-6">
@@ -113,7 +110,6 @@ export default function ContactPage() {
                     required
                   />
                 </div>
-
                 <div className="space-y-2">
                   <Label htmlFor="email">Email Address *</Label>
                   <Input
@@ -140,7 +136,6 @@ export default function ContactPage() {
                     required
                   />
                 </div>
-
                 <div className="space-y-2">
                   <Label htmlFor="jobRoles">Job Role(s) Needed</Label>
                   <Input
@@ -154,28 +149,27 @@ export default function ContactPage() {
               </div>
 
               <div className="space-y-2">
-  <Label htmlFor="country">Country *</Label>
-  <select
-    id="country"
-    name="country"
-    value={formData.country}
-    onChange={(e) => setFormData((prev) => ({ ...prev, country: e.target.value }))}
-    required
-    className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-orange-500 focus:border-orange-500 bg-white"
-  >
-    <option value="">Select a country</option>
-    <option value="United Arab Emirates">United Arab Emirates</option>
-    <option value="Saudi Arabia">Saudi Arabia</option>
-    <option value="Qatar">Qatar</option>
-    <option value="Kuwait">Kuwait</option>
-    <option value="Lebanon">Lebanon</option>
-    <option value="Jordan">Jordan</option>
-    <option value="Oman">Oman</option>
-    <option value="Bahrain">Bahrain</option>
-    <option value="Other">Other</option>
-  </select>
-</div>
-
+                <Label htmlFor="country">Country *</Label>
+                <select
+                  id="country"
+                  name="country"
+                  value={formData.country}
+                  onChange={handleChange}
+                  required
+                  className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-white focus:outline-none focus:ring-orange-500 focus:border-orange-500"
+                >
+                  <option value="">Select a country</option>
+                  <option value="United Arab Emirates">United Arab Emirates</option>
+                  <option value="Saudi Arabia">Saudi Arabia</option>
+                  <option value="Qatar">Qatar</option>
+                  <option value="Kuwait">Kuwait</option>
+                  <option value="Lebanon">Lebanon</option>
+                  <option value="Jordan">Jordan</option>
+                  <option value="Oman">Oman</option>
+                  <option value="Bahrain">Bahrain</option>
+                  <option value="Other">Other</option>
+                </select>
+              </div>
 
               <div className="space-y-2">
                 <Label htmlFor="message">Message *</Label>
@@ -191,12 +185,17 @@ export default function ContactPage() {
               </div>
 
               <div className="space-y-2">
-              <h2 className="font-bold text-orange-600">Warning:</h2>
-              <p className="text-orange-600">Please ensure all information entered in the form is accurate. Any mistakes may prevent us from being able to contact you.</p>
-                
+                <h2 className="font-bold text-orange-600">Warning:</h2>
+                <p className="text-orange-600">
+                  Please ensure all information entered in the form is accurate. Any mistakes may prevent us from being able to contact you.
+                </p>
               </div>
 
-              <Button type="submit" className="w-full bg-orange-500 hover:bg-orange-600" disabled={isSubmitting}>
+              <Button
+                type="submit"
+                className="w-full bg-orange-500 hover:bg-orange-600"
+                disabled={isSubmitting}
+              >
                 {isSubmitting ? (
                   <span className="flex items-center gap-2">
                     <span className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin"></span>
